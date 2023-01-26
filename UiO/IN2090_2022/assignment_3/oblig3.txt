@@ -1,0 +1,86 @@
+Assignment 3
+By Can H. Tartanoglu
+
+1) FDs
+    født -> alderen
+    stilling, fareT, hemmeligT, skummeltT -> lønn
+    stilling, fareT -> skummeltT
+
+2)
+    a)
+        A+ = AL
+    b)
+        {NKA}+ = NKAFGLPB
+    c)
+        NKA alone defines all attributes in the Utstyr table, so it is a candidate key. We also see that:
+
+        FGL -> K    Where A -> L
+        So:
+            FGA -> K
+        We also see that N must be candidate key because it is always on the left side, and not right. FGAN is a candidate keys
+
+        Answer:
+        NKA and FGAN
+
+3)
+    a)
+        Normal form in a relational database is a stepwise rating noting the balance bewtween number of relationships and chance for anamolies in a schema.
+
+        In IN2090, we don't learn about all normal forms, but only BCNF ⊆ 3NF ⊆ 2NF ⊆ 1NF:
+
+        - 1NF means every attribute is atomic; atomic means that it cannot be broken into smaller components.
+        - 2NF must meet 1NF's requirements; additionally, attributes that are not keys are not functionally dependent on a subset of a candidate key. Candidate keys are minimal super keys; super keys are attributes that uniquely identify a row.
+        - 3NF must meet predescessors requirements; additionally, that every non-key attribute is only functionally dependent on candidate keys.
+        - BCNF must meet predescessors requirements; additionally, every functional dependency is super key.
+    b)
+        agentId -> navn
+        agentId -> født
+
+        navn, født -> agentId
+
+        navn -> initialer
+
+        oppgragNavn -> varighet
+        oppgragNavn -> lokasjon
+
+        Usign the algorithm from the lecture:
+            - agentId -> navn
+                agentId is not a super key, navn is a key attribute -> 3NF
+            - agentId -> født
+                agentId is not a super key, født is a key attribute -> 3NF
+            - navn, født -> agentId
+                navn, født is not a super key, agentId is a key attribute -> 3NF
+            - oppgragNavn -> varighet
+                oppdragNavn is not a super key, varighet is not a key attribute, oppdragNavn is a key attribute -> 2NF
+            - oppgragNavn -> lokasjon
+                oppdragNavn is not a super key, lokasjon is not a key attribute, oppdragNavn is a key attribute -> 2NF
+
+
+        AgenterPåOppdrag has the 2NF normal form
+
+4)
+    Compositions:
+        A+ -> ABC
+        {BC}+ -> ABC
+        D+ -> DEF
+        E+ -> EF
+
+    Make sure every FD is BCNF:
+        A -> BC: A is not a super key, not BCNF (BC a key attribute -> 3NF)
+            S1(A+) -> S1(ABC), S2(A, R/A+) -> S2(ADEF)
+
+        - Decompose FDs in S1:
+            BC -> A: BC is not a super key, not BCNF; however A+ = {BC}+
+
+        - Decompose FDs in S2:
+            D -> E: D is not a super key, not BCNF (E is not a key attribute, D is a key attribute -> 2NF)
+            S3(D+) -> S3(DEF), S4(D, S2/D+) -> S4(DA)
+
+        - Decompose FDs in S3:
+            E -> F: E is not a super key, not BCNF (F is not key attribute, neith is E -> 1NF)
+            S5(E+) -> S5(EF), S6(E, S3/E+) -> S6(ED)
+
+        All FDs have been decomposed
+
+    Lossless decomposition:
+        R -> S1 ⋈ S4 ⋈ S5 ⋈ S6

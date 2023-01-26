@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "tibber"
+version = "0.2.0"
+description = "My implementation of the Tibber developer test"
+authors = ["Can H. Tartanoglu <canhtart@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.scripts]
+tapi = "tibber.cli:cli_root"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+
+shapely = "*"
+
+fastapi = "^0.88.0"
+
+tortoise-orm = {version = "^0.19.2", extras = ["asyncpg"]}
+hypercorn = "^0.14.3"
+aerich = "^0.7.1"
+click = "^8.1.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+httpx = "^0.23.0"
+asgi-lifespan = "^2.0.0"
+
+[tool.isort]
+profile = "black"
+
+[tool.aerich]
+tortoise_orm = "tibber.aerich_config"
+location = "./migrations"
+src_folder = "./."
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

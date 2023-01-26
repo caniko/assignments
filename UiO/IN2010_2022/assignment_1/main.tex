@@ -1,0 +1,254 @@
+\documentclass[]{article}
+
+\usepackage[linesnumbered,boxed,lined,commentsnumbered]{algorithm2e}
+\usepackage{clipboard}
+
+%opening
+\title{IN2010 2022: Obligatorily assignment 1}
+\author{Can Hicabi Tartanoglu}
+\date{20th September 2022}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+	I use the Python dataclass to define my components; however, I would prefer the Pydantic base model (de-facto standard for dataclasses). Pydantic is not in the stdlib, but Guido does respect it; I respect the IN2010 rules in my answers and don't use it.
+	
+	I tested my code on Python 3.10! This might be necessary for you also because of the type hints and walrus operator on 4a!
+\end{abstract}
+
+\section*{Question 2}
+
+I will use a modified version of linked lists to implement Teque. I have a node that has a previous and next attribute in addition to its value. In the Teque class, I store the farthest back (teque.back), furthest front (teque.front), and the middle node (teque.middle). I could just store one of these nodes, but this implementation speeds up the push operations in the requirement, $\mathcal{O}(1)$.
+
+\subsection*{2d}
+
+In big O notation n could be interpreted as $\lim_{n \to \infty}$; however, when n has an upper boundary it replaces infinity in the limit. We can replace n with the upper boundary; therewidth, the only difference in my case is the get function, $\mathcal{O}(10^6)$, which could be $\mathcal{O}(10^6/2)$ if I wasn't lazy.
+
+\subsection*{2a and c}
+
+I noted $\mathcal{O}$ in each sub-sub-section tittle. \% is used as the remainder division operator in the pseudocode. I found some bugs in earlier version of my Python code during debugging, and might've failed to update my pseudocode properly!
+
+\subsubsection*{push\_back: $\mathcal{O}(1)$}
+
+\begin{algorithm}[H]
+    \KwIn{N where N is an integer, $1 \leq N \leq 10^6$}
+    \BlankLine
+    node $\leftarrow$ new Node\;
+    node.value $\leftarrow$ N\;
+    \If{teque.back = null}{
+    	\Copy{PushWhenNewBack}{
+    		teque.back $\leftarrow$ node\;
+    		teque.middle $\leftarrow$ node\;
+    	}
+	}
+    \ElseIf{teque.front = null}{
+    	node.previous $\leftarrow$ teque.back\;
+    	teque.back.next $\leftarrow$ node\;
+    	teque.front $\leftarrow$ node\;
+    }
+	\Else{
+    	teque.front.next $\leftarrow$ node\;
+		node.previous $\leftarrow$ teque.front\;
+		
+		teque.front $\leftarrow$ node\;
+		
+		\If{teque.size \% 3 = 0}{
+			teque.middle $\leftarrow$ teque.middle.next\;
+		}
+	}
+	teque.size $\leftarrow$ teque.size + 1\;
+\end{algorithm}
+
+\subsubsection*{push\_front: $\mathcal{O}(1)$}
+
+\begin{algorithm}[H]
+	\KwIn{N where N is an integer, $1 \leq N \leq 10^6$}
+	\BlankLine
+	\If{teque.back = null}{
+		\Return{teque.push\_back(N)\;}
+	}
+	\BlankLine
+
+	node $\leftarrow$ new Node\;
+	node.value $\leftarrow$ N\;
+
+	\If{teque.front = null}{
+		teque.back.previous $\leftarrow$ node\;
+		node.next $\leftarrow$ teque.back\;
+		\BlankLine
+		teque.front $\leftarrow$ teque.back\;
+		\Paste{PushWhenNewBack}
+	}
+	\Else{
+		teque.back.previous $\leftarrow$ node\;
+		node.next $\leftarrow$ teque.back\;
+		
+		teque.back $\leftarrow$ node\;
+		
+		\If{teque.size \% 3 = 0}{
+			teque.middle $\leftarrow$ teque.middle.next\;
+		}
+	}
+	teque.size $\leftarrow$ teque.size + 1\;
+\end{algorithm}
+
+\subsubsection*{push\_middle: $\mathcal{O}(1)$}
+
+\begin{algorithm}[H]
+	\KwIn{N where N is an integer, $1 \leq N \leq 10^6$}
+	\BlankLine
+	\If{teque.back = null OR teque.front = null}{
+		\Return{teque.push\_back(N)\;}
+	}
+	node $\leftarrow$ new Node\;
+	node.value $\leftarrow$ N\;
+
+	\If{teque.middle.previous = null}{node.previous $\leftarrow$ teque.back\;}
+	\Else{node.previous $\leftarrow$ teque.middle.previous\;}
+
+	node.next $\leftarrow$ teque.middle\;
+	teque.middle.next $\leftarrow$ node\;
+	
+	teque.middle = node\;
+
+	teque.size $\leftarrow$ teque.size + 1\;
+\end{algorithm}
+
+\newpage
+
+\subsubsection*{get: $\mathcal{O}(n)$}
+
+I could make this $\mathcal{O}(n/2)$, but there is no limit to the time complexity on this question.
+
+\begin{algorithm}[H]
+	\KwIn{i where i is an integer, $1 \leq i \leq teque.size$}
+	\BlankLine
+	\If{teque.back = null OR teque.size = 0}{
+		\Return{null\;}
+	}
+	\If{teque.front = null OR i = 0}{
+		\Return{teque.back.value\;}
+	}
+	\If{i = teque.size - 1}{\Return{teque.front.value\;}}
+	current\_node $\leftarrow$ teque.back\;
+	\For{c $\leftarrow$ 0 To i}{
+		current\_node $\leftarrow$ current\_node.next\;
+	}
+	\Return{current\_node.value\;}
+\end{algorithm}
+
+\subsection*{3a}
+
+\begin{algorithm}[H]
+	\KwIn{Kitten node value (current\_value); Map that has parent node as keys and set of children as values (p2c)}
+	\KwOut{The node sequence describing the path from the kitten to the root}
+	\BlankLine
+	path $\leftarrow$ list\;
+	add current\_value to the list path\;
+	no\_parent $\leftarrow$ true\;
+	\While{true}{
+		\ForAll{(node\_value, children) $\in$ p2c}{
+			\If{current\_value $\in$ children}{
+				add node\_value to the list path\;
+				current\_value $\leftarrow$ node\_value\;
+				no\_parent $\leftarrow$ false\;
+				break\;
+			}
+		}
+		\If{no\_parent}{\Return{path\;}}
+		no\_parent $\leftarrow$ true\;
+	}	
+\end{algorithm}
+
+\subsection*{4}
+
+\subsubsection*{4a}
+
+I use the same Node class from 1a to store progress.
+
+\medskip \noindent
+\textbf{Helper function: bst\_sequence}
+
+\begin{algorithm}[H]
+	\KwIn{Node of BST (start with root node)}
+	\KwOut{Data sequence of BST left2right, top2bottom—starting from root node}
+	\BlankLine
+	\If{node = null}{\Return{null}}
+	
+	stdout $\leftarrow$ node.value\;
+	bst\_sequence(node.left)\;
+	bst\_sequence(node.right)\;
+\end{algorithm}
+
+\medskip \noindent
+\textbf{sorted\_array\_to\_bst}
+
+\begin{algorithm}[H]
+	\KwIn{Sorted Array (array) with length N; start index; end index}
+	\KwOut{Root node of BST}
+	\BlankLine
+	
+	\If{start > end}{return null\;}
+	
+	mid $\leftarrow \lfloor (start + end) / 2 \rfloor$\;
+	node $\leftarrow$ new Node\;
+	
+	node.left $\leftarrow$ sorted\_array\_to\_bst(array, start, mid)\;
+	
+	node.right $\leftarrow$ sorted\_array\_to\_bst(array, mid + 1, end)\;
+	
+	\Return{node\;}
+
+\end{algorithm}
+
+\medskip \noindent
+\textbf{main}
+
+\begin{algorithm}[H]
+	\KwIn{Sorted Array (array) with size N}
+	\KwOut{Sorted elements for a balanced BST left2right, top2bottom}
+	\BlankLine
+	
+	root $\leftarrow$ sorted\_array\_to\_bst(array, 0, N)\;
+	bst\_sequence(root)\;
+
+\end{algorithm}
+
+\newpage
+
+\subsubsection*{4b}
+
+\textbf{heap\_to\_bst}
+
+\begin{algorithm}[H]
+	\KwIn{Binary heap (heap)}
+	\KwOut{The current node value}
+	\BlankLine
+	\If{heap is empty}{\Return{null}}
+	
+	left $\leftarrow$ BinaryHeap\;
+	right $\leftarrow$ BinaryHeap\;
+	
+	distance\_to\_node\_value $\leftarrow$ $\lfloor length of heap / 2 \rfloor$
+	
+	\For{i $\leftarrow$ 0 to distance\_to\_node\_value}{
+		value $\leftarrow$ get and remove first value from heap\;
+		add value to left\;
+	}
+
+	value $\leftarrow$ get and remove first value from heap\;
+	stdout $\leftarrow$ value\;
+	
+	\While{heap is not empty}{
+		value $\leftarrow$ get and remove first value from heap\;
+		add value to right\;
+	}
+
+	heap\_to\_bst(right)\;
+	heap\_to\_bst(left)\;
+
+\end{algorithm}
+
+\end{document}

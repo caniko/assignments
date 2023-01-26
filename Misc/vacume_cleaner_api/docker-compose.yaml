@@ -1,0 +1,42 @@
+version: "3.9"
+
+x-var: &POSTGRES_URL
+#  asyncpg://{user}:{password}@{host}:{port}/{db_name}
+  "postgres://postgres:this_is_bad_very_bad@db:5432/postgres"
+
+services:
+  db:
+    image: "postgres:15-alpine"
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: "this_is_bad_very_bad"
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: .
+      dockerfile: .dockerfile
+    command: ['tapi', 'db', 'migrate']
+    environment:
+      POSTGRES_URL: *POSTGRES_URL
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: .dockerfile
+    command: ['hypercorn', 'tibber.api', '--bind', '0.0.0.0:8000']
+    ports:
+      - "5000:8000"
+    environment:
+      POSTGRES_URL: *POSTGRES_URL
+    depends_on:
+      - migrate
